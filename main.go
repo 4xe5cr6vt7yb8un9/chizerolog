@@ -31,22 +31,26 @@ func LoggerMiddleware(logger *zerolog.Logger) func(next http.Handler) http.Handl
 					http.Error(ww, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				}
 
+				bytes_out := ""
+				if ww.BytesWritten() > 0 {
+					bytes_out = "bytes_out"
+				}
 				// log end request
 				log.Info().
 					Str("type", "access").
 					Timestamp().
 					Fields(map[string]interface{}{
-						"remote_ip":  r.RemoteAddr,
-						"url":        r.URL.Path,
-						"proto":      r.Proto,
-						"method":     r.Method,
-						"user_agent": r.Header.Get("User-Agent"),
+						"remote_ip": r.RemoteAddr,
+						"url":       r.URL.Path,
+						"proto":     r.Proto,
+						"method":    r.Method,
+						//"user_agent": r.Header.Get("User-Agent"),
 						"status":     ww.Status(),
 						"latency_ms": float64(t2.Sub(t1).Nanoseconds()) / 1000000.0,
 						"bytes_in":   r.Header.Get("Content-Length"),
-						"bytes_out":  ww.BytesWritten(),
+						bytes_out:    ww.BytesWritten(),
 					}).
-					Msg("incoming_request")
+					Msg("Request:")
 			}()
 
 			next.ServeHTTP(ww, r)
