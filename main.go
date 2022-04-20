@@ -32,21 +32,67 @@ func LoggerMiddleware(logger *zerolog.Logger) func(next http.Handler) http.Handl
 				}
 
 				// log end request
-				log.Info().
-					Str("type", "access").
-					Timestamp().
-					Fields(map[string]interface{}{
-						"remote_ip": r.RemoteAddr,
-						"url":       r.URL.Path,
-						"proto":     r.Proto,
-						"method":    r.Method,
-						//"user_agent": r.Header.Get("User-Agent"),
-						"status":     ww.Status(),
-						"latency_ms": float64(t2.Sub(t1).Nanoseconds()) / 1000000.0,
-						"bytes_in":   r.Header.Get("Content-Length"),
-						"bytes_out":  ww.BytesWritten(),
-					}).
-					Msg("Request:")
+				if r.Header.Get("Content-Length") != "" && ww.BytesWritten() >= 0 {
+					log.Info().
+						Str("type", "access").
+						Timestamp().
+						Fields(map[string]interface{}{
+							"remote_ip": r.RemoteAddr,
+							"url":       r.URL.Path,
+							"proto":     r.Proto,
+							"method":    r.Method,
+							//"user_agent": r.Header.Get("User-Agent"),
+							"status":     ww.Status(),
+							"latency_ms": float64(t2.Sub(t1).Nanoseconds()) / 1000000.0,
+							"bytes_in":   r.Header.Get("Content-Length"),
+							"bytes_out":  ww.BytesWritten(),
+						}).
+						Msg("Request:")
+				} else if r.Header.Get("Content-Length") == "" {
+					log.Info().
+						Str("type", "access").
+						Timestamp().
+						Fields(map[string]interface{}{
+							"remote_ip": r.RemoteAddr,
+							"url":       r.URL.Path,
+							"proto":     r.Proto,
+							"method":    r.Method,
+							//"user_agent": r.Header.Get("User-Agent"),
+							"status":     ww.Status(),
+							"latency_ms": float64(t2.Sub(t1).Nanoseconds()) / 1000000.0,
+							"bytes_out":  ww.BytesWritten(),
+						}).
+						Msg("Request:")
+				} else if ww.BytesWritten() == nil {
+					log.Info().
+						Str("type", "access").
+						Timestamp().
+						Fields(map[string]interface{}{
+							"remote_ip": r.RemoteAddr,
+							"url":       r.URL.Path,
+							"proto":     r.Proto,
+							"method":    r.Method,
+							//"user_agent": r.Header.Get("User-Agent"),
+							"status":     ww.Status(),
+							"latency_ms": float64(t2.Sub(t1).Nanoseconds()) / 1000000.0,
+							"bytes_in":   r.Header.Get("Content-Length"),
+						}).
+						Msg("Request:")
+				} else {
+					log.Info().
+						Str("type", "access").
+						Timestamp().
+						Fields(map[string]interface{}{
+							"remote_ip": r.RemoteAddr,
+							"url":       r.URL.Path,
+							"proto":     r.Proto,
+							"method":    r.Method,
+							//"user_agent": r.Header.Get("User-Agent"),
+							"status":     ww.Status(),
+							"latency_ms": float64(t2.Sub(t1).Nanoseconds()) / 1000000.0,
+						}).
+						Msg("Request:")
+				}
 			}()
 
 			next.ServeHTTP(ww, r)
