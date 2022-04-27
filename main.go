@@ -2,7 +2,6 @@ package chizerolog
 
 import (
 	"net/http"
-	"runtime/debug"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
@@ -26,8 +25,8 @@ func LoggerMiddleware(logger *zerolog.Logger) func(next http.Handler) http.Handl
 						Str("type", "error").
 						Timestamp().
 						Interface("recover_info", rec).
-						Bytes("debug_stack", debug.Stack()).
-						Msg("log system error")
+						//Bytes("debug_stack", debug.Stack()).
+						Msg("System Error")
 					http.Error(ww, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				}
 
